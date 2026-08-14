@@ -64,6 +64,7 @@ public class SecurityConfig {
                          .requestMatchers("/api/auth/me/**").authenticated()
                          .requestMatchers("/api/auth/verify/**").authenticated()
                          .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+                         .requestMatchers("/api/reports/**").hasAuthority("ADMIN")
                          .requestMatchers(HttpMethod.POST, "/api/courses").hasAuthority("ADMIN")
                          .requestMatchers(HttpMethod.POST, "/api/courses/*/lessons").hasAnyAuthority("ADMIN","TEACHER")
                          .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasAuthority("ADMIN")

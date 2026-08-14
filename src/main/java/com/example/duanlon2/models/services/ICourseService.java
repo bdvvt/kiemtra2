@@ -8,6 +8,7 @@ import com.example.duanlon2.models.entities.Course;
 import com.example.duanlon2.models.entities.User;
 import com.example.duanlon2.models.entities.Lesson;
 import com.example.duanlon2.models.dto.req.LessonReq;
+import com.example.duanlon2.models.dto.res.TopCourseRes;
 import java.util.List;
 
 public interface ICourseService {
@@ -21,4 +22,5 @@ public interface ICourseService {
     void deleteCourse(Long id);
     List<Course> findAllBySearch(String search);
     List<Course> findByTeacherId(Long teacherId);
+    List<TopCourseRes> findTopCourses();
 }

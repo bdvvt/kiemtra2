@@ -3,6 +3,7 @@ package com.example.duanlon2.models.repositories;
 import com.example.duanlon2.models.constants.CourseStatus;
 import com.example.duanlon2.models.constants.RoleName;
 import com.example.duanlon2.models.constants.UserStatus;
+import com.example.duanlon2.models.dto.res.TopCourseRes;
 import com.example.duanlon2.models.entities.Course;
 import com.example.duanlon2.models.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,4 +40,17 @@ public interface ICourseRepository extends JpaRepository<Course,Long> {
         WHERE (:status IS NULL OR c.status = :status)
     """)
     List<Course> findAllByStatus(@Param("status") CourseStatus status);
+
+    @Query("""
+        SELECT new com.example.duanlon2.models.dto.res.TopCourseRes(
+            c.courseId,
+            c.title,
+            COUNT(e.enrollmentId)
+        )
+        FROM Course c
+        LEFT JOIN Enrollment e ON e.course = c
+        GROUP BY c.courseId, c.title
+        ORDER BY COUNT(e.enrollmentId) DESC, c.title ASC
+    """)
+    List<TopCourseRes> findTopCourses();
 }

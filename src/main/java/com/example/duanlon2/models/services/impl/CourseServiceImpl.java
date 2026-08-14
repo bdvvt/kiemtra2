@@ -6,6 +6,7 @@ import com.example.duanlon2.models.constants.RoleName;
 import com.example.duanlon2.models.dto.req.CourseReq;
 import com.example.duanlon2.models.dto.req.CourseStatusReq;
 import com.example.duanlon2.models.dto.req.LessonReq;
+import com.example.duanlon2.models.dto.res.TopCourseRes;
 import com.example.duanlon2.models.entities.Course;
 import com.example.duanlon2.models.entities.Lesson;
 import com.example.duanlon2.models.repositories.ILessonRepository;
@@ -152,6 +153,12 @@ public class CourseServiceImpl implements ICourseService {
             return courseRepository.findAll();
         }
         return courseRepository.findByTeacherId(teacherId);
+    }
+
+    @Override
+    public List<TopCourseRes> findTopCourses() {
+        log.info("Fetching top courses by enrollment count");
+        return courseRepository.findTopCourses();
     }
 }
 
