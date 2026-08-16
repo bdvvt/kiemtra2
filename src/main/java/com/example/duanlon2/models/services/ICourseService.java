@@ -4,11 +4,11 @@ import com.example.duanlon2.models.constants.CourseStatus;
 import com.example.duanlon2.models.dto.req.CourseReq;
 import com.example.duanlon2.models.dto.req.CourseStatusReq;
 import com.example.duanlon2.models.dto.req.UserReq;
+import com.example.duanlon2.models.dto.res.TopCourseRes;
 import com.example.duanlon2.models.entities.Course;
 import com.example.duanlon2.models.entities.User;
 import com.example.duanlon2.models.entities.Lesson;
 import com.example.duanlon2.models.dto.req.LessonReq;
-import com.example.duanlon2.models.dto.res.TopCourseRes;
 import java.util.List;
 
 public interface ICourseService {

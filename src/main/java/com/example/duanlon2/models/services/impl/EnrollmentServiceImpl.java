@@ -158,7 +158,6 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         BigDecimal averageProgress = enrollments.isEmpty()
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
                 : totalProgress.divide(BigDecimal.valueOf(enrollments.size()), 2, RoundingMode.HALF_UP);
-
         return StudentProgressRes.builder()
                 .studentId(student.getId())
                 .username(student.getUsername())

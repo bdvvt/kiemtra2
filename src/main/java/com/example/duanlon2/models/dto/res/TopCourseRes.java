@@ -1,13 +1,13 @@
 package com.example.duanlon2.models.dto.res;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
-@Getter
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class TopCourseRes {
     private Long courseId;
     private String title;
     private Long enrollmentCount;
 }
-

@@ -81,6 +81,7 @@ public class SecurityConfig {
                          .requestMatchers(HttpMethod.POST, "/api/notifications/**").hasAuthority("ADMIN")
                          .requestMatchers(HttpMethod.GET, "/api/notifications/**").authenticated()
                          .requestMatchers(HttpMethod.PUT, "/api/notifications/*/read").authenticated()
+                         .requestMatchers("/api/reports/**").hasAuthority("ADMIN")
                  )
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(Customizer.withDefaults())
