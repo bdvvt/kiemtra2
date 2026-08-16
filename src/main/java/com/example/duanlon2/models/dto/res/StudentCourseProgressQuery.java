@@ -17,6 +17,5 @@ public class StudentCourseProgressQuery {
     private LocalDateTime completionDate;
     private Long totalLessons;
     private Long completedLessons;
-    private Double progressPercent;
 }
 

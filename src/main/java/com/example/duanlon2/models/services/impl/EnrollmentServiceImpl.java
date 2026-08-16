@@ -99,9 +99,12 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         lessonProgressRepository.save(lessonProgress);
         EnrollmentProgressStats progress = enrollmentRepository
                 .findProgressStatsByEnrollmentId(enrollmentId)
-                .orElse(new EnrollmentProgressStats(0L, 0L, 0.0));
-        BigDecimal progressPercent = BigDecimal.valueOf(progress.getProgressPercent())
-                .setScale(2, RoundingMode.HALF_UP);
+                .orElse(new EnrollmentProgressStats(0L, 0L));
+        BigDecimal progressPercent = progress.getTotalLessons() == 0
+                ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
+                : BigDecimal.valueOf(progress.getCompletedLessons())
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(BigDecimal.valueOf(progress.getTotalLessons()), 2, RoundingMode.HALF_UP);
         enrollment.setProgressPercent(progressPercent);
         if (progressPercent.compareTo(BigDecimal.valueOf(100)) == 0) {
             enrollment.setStatus(EnrollmentStatus.COMPLETED);
@@ -127,8 +130,11 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         int completedCourses = 0;
 
         for (StudentCourseProgressQuery row : progressRows) {
-            BigDecimal progressPercent = BigDecimal.valueOf(row.getProgressPercent())
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal progressPercent = row.getTotalLessons() == 0
+                    ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
+                    : BigDecimal.valueOf(row.getCompletedLessons())
+                            .multiply(BigDecimal.valueOf(100))
+                            .divide(BigDecimal.valueOf(row.getTotalLessons()), 2, RoundingMode.HALF_UP);
             if (progressPercent.compareTo(BigDecimal.valueOf(100)) == 0) {
                 completedCourses++;
             }

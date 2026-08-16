@@ -31,10 +31,7 @@ public interface IEnrollmentRepository extends JpaRepository<Enrollment, Long> {
     @Query("""
         SELECT new com.example.duanlon2.models.dto.res.EnrollmentProgressStats(
             COUNT(DISTINCT l.lessonId),
-            COUNT(DISTINCT lp.progressId),
-            CASE WHEN COUNT(DISTINCT l.lessonId) = 0 THEN 0.0
-                 ELSE 100.0 * COUNT(DISTINCT lp.progressId) / COUNT(DISTINCT l.lessonId)
-            END
+            COUNT(DISTINCT lp.progressId)
         )
         FROM Enrollment e
         JOIN e.course c
@@ -59,10 +56,7 @@ public interface IEnrollmentRepository extends JpaRepository<Enrollment, Long> {
             e.status,
             e.completionDate,
             COUNT(DISTINCT l.lessonId),
-            COUNT(DISTINCT lp.progressId),
-            CASE WHEN COUNT(DISTINCT l.lessonId) = 0 THEN 0.0
-                 ELSE 100.0 * COUNT(DISTINCT lp.progressId) / COUNT(DISTINCT l.lessonId)
-            END
+            COUNT(DISTINCT lp.progressId)
         )
         FROM Enrollment e
         JOIN e.course c
