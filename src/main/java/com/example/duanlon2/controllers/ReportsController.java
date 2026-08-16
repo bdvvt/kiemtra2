@@ -32,6 +32,19 @@ public class ReportsController {
         );
     }
 
+    @GetMapping("/teacher_courses_overview/{teacher_id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> getTeacherCoursesOverview(@org.springframework.web.bind.annotation.PathVariable("teacher_id") Long teacherId) {
+        log.info("Fetching teacher courses overview for teacher ID: {}", teacherId);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .message("Get Teacher Courses Overview Successfully")
+                        .code(200)
+                        .data(courseService.getTeacherCoursesOverview(teacherId))
+                        .build()
+        );
+    }
+
     @GetMapping("/student_progress/{student_id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getStudentProgress(@org.springframework.web.bind.annotation.PathVariable("student_id") Long studentId) {
