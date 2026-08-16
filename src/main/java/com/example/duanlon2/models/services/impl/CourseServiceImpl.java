@@ -177,7 +177,6 @@ public class CourseServiceImpl implements ICourseService {
         List<Course> courses = courseRepository.findByTeacherId(teacherId);
         List<TeacherCourseOverviewItem> courseItems = new ArrayList<>();
         long totalEnrollments = 0;
-        BigDecimal totalProgress = BigDecimal.ZERO;
 
         for (Course course : courses) {
             List<Enrollment> enrollments = enrollmentRepository.findByCourseCourseId(course.getCourseId());
@@ -190,7 +189,6 @@ public class CourseServiceImpl implements ICourseService {
                     : courseProgress.divide(BigDecimal.valueOf(enrollments.size()), 2, RoundingMode.HALF_UP);
 
             totalEnrollments += enrollments.size();
-            totalProgress = totalProgress.add(courseProgress);
             courseItems.add(TeacherCourseOverviewItem.builder()
                     .courseId(course.getCourseId())
                     .title(course.getTitle())
@@ -200,9 +198,9 @@ public class CourseServiceImpl implements ICourseService {
                     .build());
         }
 
-        BigDecimal averageProgress = totalEnrollments == 0
-                ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
-                : totalProgress.divide(BigDecimal.valueOf(totalEnrollments), 2, RoundingMode.HALF_UP);
+        Double averageProgressValue = enrollmentRepository.findAverageProgressByTeacherId(teacherId);
+        BigDecimal averageProgress = BigDecimal.valueOf(averageProgressValue)
+                .setScale(2, RoundingMode.HALF_UP);
         int publishedCourses = (int) courses.stream()
                 .filter(course -> course.getStatus() == CourseStatus.PUBLISHED)
                 .count();

@@ -17,4 +17,12 @@ public interface IEnrollmentRepository extends JpaRepository<Enrollment, Long> {
     boolean existsByCourseCourseIdAndStudentId(Long courseId, Long studentId);
 
     List<Enrollment> findByCourseCourseId(Long courseId);
+
+    @Query("""
+        SELECT COALESCE(AVG(COALESCE(e.progressPercent, 0)), 0)
+        FROM Enrollment e
+        JOIN e.course c
+        WHERE c.teacher.id = :teacherId
+    """)
+    Double findAverageProgressByTeacherId(@Param("teacherId") Long teacherId);
 }
