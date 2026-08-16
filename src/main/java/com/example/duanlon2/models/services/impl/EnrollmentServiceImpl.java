@@ -97,21 +97,7 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         lessonProgress.setIsCompleted(true);
         lessonProgress.setCompletedAt(java.time.LocalDateTime.now());
         lessonProgressRepository.save(lessonProgress);
-        long totalLessons = enrollment.getCourse().getLessons().size();
-        if (totalLessons > 0) {
-            long completedLessons = lessonProgressRepository.countCompletedLessonsByEnrollmentId(enrollmentId);
-            BigDecimal progressPercent = BigDecimal.valueOf(completedLessons)
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(BigDecimal.valueOf(totalLessons), 2, java.math.RoundingMode.HALF_UP);
-            enrollment.setProgressPercent(progressPercent);
-            if (progressPercent.compareTo(new BigDecimal("100.00")) == 0) {
-                enrollment.setStatus(EnrollmentStatus.COMPLETED);
-                enrollment.setCompletionDate(LocalDateTime.now());
-            } else {
-                enrollment.setStatus(EnrollmentStatus.ENROLLED);
-                enrollment.setCompletionDate(null);
-            }
-        }
+        updateEnrollmentProgress(enrollment);
 
         return enrollmentRepository.save(enrollment);
     }
@@ -128,29 +114,20 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         int completedCourses = 0;
 
         for (Enrollment enrollment : enrollments) {
-            Long courseId = enrollment.getCourse().getCourseId();
-            long totalLessons = lessonRepository.countByCourseId(courseId);
-            long completedLessons = lessonProgressRepository
-                    .countCompletedLessonsByEnrollmentId(enrollment.getEnrollmentId());
-            BigDecimal progressPercent = totalLessons == 0
-                    ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
-                    : BigDecimal.valueOf(completedLessons)
-                            .multiply(BigDecimal.valueOf(100))
-                            .divide(BigDecimal.valueOf(totalLessons), 2, RoundingMode.HALF_UP);
-
-            if (progressPercent.compareTo(BigDecimal.valueOf(100)) == 0) {
+            ProgressSummary progress = calculateProgress(enrollment);
+            if (progress.progressPercent().compareTo(BigDecimal.valueOf(100)) == 0) {
                 completedCourses++;
             }
-            totalProgress = totalProgress.add(progressPercent);
+            totalProgress = totalProgress.add(progress.progressPercent());
             courses.add(CourseProgressRes.builder()
                     .enrollmentId(enrollment.getEnrollmentId())
-                    .courseId(courseId)
+                    .courseId(enrollment.getCourse().getCourseId())
                     .courseTitle(enrollment.getCourse().getTitle())
                     .enrollmentDate(enrollment.getEnrollmentDate())
                     .status(enrollment.getStatus())
-                    .progressPercent(progressPercent)
-                    .completedLessons(completedLessons)
-                    .totalLessons(totalLessons)
+                    .progressPercent(progress.progressPercent())
+                    .completedLessons(progress.completedLessons())
+                    .totalLessons(progress.totalLessons())
                     .completionDate(enrollment.getCompletionDate())
                     .build());
         }
@@ -168,5 +145,33 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
                 .averageProgressPercent(averageProgress)
                 .courses(courses)
                 .build();
+    }
+
+    private void updateEnrollmentProgress(Enrollment enrollment) {
+        ProgressSummary progress = calculateProgress(enrollment);
+        enrollment.setProgressPercent(progress.progressPercent());
+        if (progress.progressPercent().compareTo(BigDecimal.valueOf(100)) == 0) {
+            enrollment.setStatus(EnrollmentStatus.COMPLETED);
+            enrollment.setCompletionDate(LocalDateTime.now());
+        } else {
+            enrollment.setStatus(EnrollmentStatus.ENROLLED);
+            enrollment.setCompletionDate(null);
+        }
+    }
+
+    private ProgressSummary calculateProgress(Enrollment enrollment) {
+        Long enrollmentId = enrollment.getEnrollmentId();
+        Long courseId = enrollment.getCourse().getCourseId();
+        long totalLessons = lessonRepository.countByCourseId(courseId);
+        long completedLessons = lessonProgressRepository.countCompletedLessonsByEnrollmentId(enrollmentId);
+        BigDecimal progressPercent = totalLessons == 0
+                ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
+                : BigDecimal.valueOf(completedLessons)
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(BigDecimal.valueOf(totalLessons), 2, RoundingMode.HALF_UP);
+        return new ProgressSummary(totalLessons, completedLessons, progressPercent);
+    }
+
+    private record ProgressSummary(long totalLessons, long completedLessons, BigDecimal progressPercent) {
     }
 }
