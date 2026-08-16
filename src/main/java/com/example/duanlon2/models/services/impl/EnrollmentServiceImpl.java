@@ -81,12 +81,10 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         if (!enrollment.getStudent().getId().equals(studentId)) {
             throw new AccessDeniedException("Bạn không có quyền cập nhật tiến độ học của sinh viên khác!");
         }
-        Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy bài học với ID: " + lessonId));
         Long courseId = enrollment.getCourse().getCourseId();
-        if (!lesson.getCourse().getCourseId().equals(courseId)) {
-            throw new IllegalArgumentException("Bài học này không thuộc về khóa học bạn đã đăng ký!");
-        }
+        Lesson lesson = lessonRepository.findByIdAndCourseId(lessonId, courseId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Không tìm thấy bài học hoặc bài học không thuộc khóa học đã đăng ký!"));
         LessonProgress lessonProgress = lessonProgressRepository
                 .findByEnrollmentEnrollmentIdAndLessonLessonId(enrollmentId, lessonId)
                 .orElseGet(() -> LessonProgress.builder()
