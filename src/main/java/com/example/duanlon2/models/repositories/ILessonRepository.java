@@ -31,7 +31,5 @@ public interface ILessonRepository extends JpaRepository<Lesson, Long> {
             @Param("courseId") Long courseId
     );
 
-    @Query("SELECT COUNT(l) FROM Lesson l WHERE l.course.courseId = :courseId")
-    long countByCourseId(@Param("courseId") Long courseId);
 }
 

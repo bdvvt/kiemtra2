@@ -4,6 +4,8 @@ import com.example.duanlon2.exceptions.NotFoundException;
 import com.example.duanlon2.models.constants.EnrollmentStatus;
 import com.example.duanlon2.models.dto.req.EnrollmentReq;
 import com.example.duanlon2.models.dto.res.CourseProgressRes;
+import com.example.duanlon2.models.dto.res.EnrollmentProgressStats;
+import com.example.duanlon2.models.dto.res.StudentCourseProgressQuery;
 import com.example.duanlon2.models.dto.res.StudentProgressRes;
 import com.example.duanlon2.models.entities.Course;
 import com.example.duanlon2.models.entities.Enrollment;
@@ -95,7 +97,19 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         lessonProgress.setIsCompleted(true);
         lessonProgress.setCompletedAt(java.time.LocalDateTime.now());
         lessonProgressRepository.save(lessonProgress);
-        updateEnrollmentProgress(enrollment);
+        EnrollmentProgressStats progress = enrollmentRepository
+                .findProgressStatsByEnrollmentId(enrollmentId)
+                .orElse(new EnrollmentProgressStats(0L, 0L, 0.0));
+        BigDecimal progressPercent = BigDecimal.valueOf(progress.getProgressPercent())
+                .setScale(2, RoundingMode.HALF_UP);
+        enrollment.setProgressPercent(progressPercent);
+        if (progressPercent.compareTo(BigDecimal.valueOf(100)) == 0) {
+            enrollment.setStatus(EnrollmentStatus.COMPLETED);
+            enrollment.setCompletionDate(LocalDateTime.now());
+        } else {
+            enrollment.setStatus(EnrollmentStatus.ENROLLED);
+            enrollment.setCompletionDate(null);
+        }
 
         return enrollmentRepository.save(enrollment);
     }
@@ -106,70 +120,45 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sinh viên với ID: " + studentId));
 
-        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        List<StudentCourseProgressQuery> progressRows =
+                enrollmentRepository.findStudentCourseProgressByStudentId(studentId);
         List<CourseProgressRes> courses = new ArrayList<>();
         BigDecimal totalProgress = BigDecimal.ZERO;
         int completedCourses = 0;
 
-        for (Enrollment enrollment : enrollments) {
-            ProgressSummary progress = calculateProgress(enrollment);
-            if (progress.progressPercent().compareTo(BigDecimal.valueOf(100)) == 0) {
+        for (StudentCourseProgressQuery row : progressRows) {
+            BigDecimal progressPercent = BigDecimal.valueOf(row.getProgressPercent())
+                    .setScale(2, RoundingMode.HALF_UP);
+            if (progressPercent.compareTo(BigDecimal.valueOf(100)) == 0) {
                 completedCourses++;
             }
-            totalProgress = totalProgress.add(progress.progressPercent());
+            totalProgress = totalProgress.add(progressPercent);
             courses.add(CourseProgressRes.builder()
-                    .enrollmentId(enrollment.getEnrollmentId())
-                    .courseId(enrollment.getCourse().getCourseId())
-                    .courseTitle(enrollment.getCourse().getTitle())
-                    .enrollmentDate(enrollment.getEnrollmentDate())
-                    .status(enrollment.getStatus())
-                    .progressPercent(progress.progressPercent())
-                    .completedLessons(progress.completedLessons())
-                    .totalLessons(progress.totalLessons())
-                    .completionDate(enrollment.getCompletionDate())
+                    .enrollmentId(row.getEnrollmentId())
+                    .courseId(row.getCourseId())
+                    .courseTitle(row.getCourseTitle())
+                    .enrollmentDate(row.getEnrollmentDate())
+                    .status(row.getStatus())
+                    .progressPercent(progressPercent)
+                    .completedLessons(row.getCompletedLessons())
+                    .totalLessons(row.getTotalLessons())
+                    .completionDate(row.getCompletionDate())
                     .build());
         }
 
-        BigDecimal averageProgress = enrollments.isEmpty()
+        BigDecimal averageProgress = progressRows.isEmpty()
                 ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
-                : totalProgress.divide(BigDecimal.valueOf(enrollments.size()), 2, RoundingMode.HALF_UP);
+                : totalProgress.divide(BigDecimal.valueOf(progressRows.size()), 2, RoundingMode.HALF_UP);
         return StudentProgressRes.builder()
                 .studentId(student.getId())
                 .username(student.getUsername())
                 .email(student.getEmail())
                 .fullName(student.getFullName())
-                .totalCourses(enrollments.size())
+                .totalCourses(progressRows.size())
                 .completedCourses(completedCourses)
                 .averageProgressPercent(averageProgress)
                 .courses(courses)
                 .build();
     }
 
-    private void updateEnrollmentProgress(Enrollment enrollment) {
-        ProgressSummary progress = calculateProgress(enrollment);
-        enrollment.setProgressPercent(progress.progressPercent());
-        if (progress.progressPercent().compareTo(BigDecimal.valueOf(100)) == 0) {
-            enrollment.setStatus(EnrollmentStatus.COMPLETED);
-            enrollment.setCompletionDate(LocalDateTime.now());
-        } else {
-            enrollment.setStatus(EnrollmentStatus.ENROLLED);
-            enrollment.setCompletionDate(null);
-        }
-    }
-
-    private ProgressSummary calculateProgress(Enrollment enrollment) {
-        Long enrollmentId = enrollment.getEnrollmentId();
-        Long courseId = enrollment.getCourse().getCourseId();
-        long totalLessons = lessonRepository.countByCourseId(courseId);
-        long completedLessons = lessonProgressRepository.countCompletedLessonsByEnrollmentId(enrollmentId);
-        BigDecimal progressPercent = totalLessons == 0
-                ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
-                : BigDecimal.valueOf(completedLessons)
-                        .multiply(BigDecimal.valueOf(100))
-                        .divide(BigDecimal.valueOf(totalLessons), 2, RoundingMode.HALF_UP);
-        return new ProgressSummary(totalLessons, completedLessons, progressPercent);
-    }
-
-    private record ProgressSummary(long totalLessons, long completedLessons, BigDecimal progressPercent) {
-    }
 }
