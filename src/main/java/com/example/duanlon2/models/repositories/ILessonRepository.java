@@ -19,17 +19,7 @@ public interface ILessonRepository extends JpaRepository<Lesson, Long> {
     """)
     Optional<Lesson> findByIdWithPublishedLessons(@Param("id") Long id);
 
-    @Query("""
-        SELECT l
-        FROM Lesson l
-        JOIN FETCH l.course c
-        WHERE l.lessonId = :lessonId
-          AND c.courseId = :courseId
-    """)
-    Optional<Lesson> findByIdAndCourseId(
-            @Param("lessonId") Long lessonId,
-            @Param("courseId") Long courseId
-    );
-
+    @Query("SELECT COUNT(l) FROM Lesson l WHERE l.course.courseId = :courseId")
+    long countByCourseId(@Param("courseId") Long courseId);
 }
 
