@@ -7,12 +7,15 @@ import com.example.duanlon2.models.dto.req.UserReq;
 import com.example.duanlon2.models.dto.req.UserStatusReq;
 import com.example.duanlon2.models.dto.req.UserUpRoleReq;
 import com.example.duanlon2.models.dto.wrapper.ApiResponse;
+import com.example.duanlon2.models.entities.User;
 import com.example.duanlon2.models.services.IUserService;
+import com.example.duanlon2.security.principal.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -35,25 +38,27 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @ModelAttribute  UserReq req){
+    public ResponseEntity<?> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, @Valid @ModelAttribute  UserReq req){
+        User currentUser = userDetails.getUser();
         log.info("Updating user with ID: {}", id);
         return ResponseEntity.status(200).body(
                 ApiResponse.builder()
                         .message("Updated User Successfully")
                         .code(200)
-                        .data(userService.updateUser(id,req))
+                        .data(userService.updateUser(currentUser, id,req))
                         .build()
         );
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @Valid @ModelAttribute UserPassReq req) {
+    public ResponseEntity<?> updateUserPassword(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long id, @Valid @ModelAttribute UserPassReq req) {
+        User currentUser = customUserDetails.getUser();
         log.info("Updating user password with ID: {}", id);
         return ResponseEntity.status(200).body(
                 ApiResponse.builder()
                         .message("Updated User Password Successfully")
                         .code(200)
-                        .data(userService.updateUserPassword(id, req))
+                        .data(userService.updateUserPassword(currentUser,id, req))
                         .build()
         );
     }

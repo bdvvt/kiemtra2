@@ -4,9 +4,12 @@ import com.example.duanlon2.models.constants.CourseStatus;
 import com.example.duanlon2.models.constants.RoleName;
 import com.example.duanlon2.models.dto.req.CourseReq;
 import com.example.duanlon2.models.dto.req.CourseStatusReq;
+import com.example.duanlon2.models.dto.req.ReviewReq;
 import com.example.duanlon2.models.dto.wrapper.ApiResponse;
 import com.example.duanlon2.models.entities.User;
+import com.example.duanlon2.models.repositories.IReviewRepository;
 import com.example.duanlon2.models.services.ICourseService;
+import com.example.duanlon2.models.services.IReviewService;
 import jakarta.validation.Valid;
 import com.example.duanlon2.models.dto.req.LessonReq;
 import com.example.duanlon2.security.principal.CustomUserDetails;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CourseController {
     private final ICourseService courseService;
+    private final IReviewService reviewService;
 
     @GetMapping
     public ResponseEntity<?> findAll(
@@ -145,6 +149,33 @@ public class CourseController {
                         .message("Deleted Course Successfully")
                         .code(204)
                         .data(null)
+                        .build()
+        );
+    }
+
+    @GetMapping("/{course_id}/reviews")
+    public ResponseEntity<?> getReviewsByCourseId(@PathVariable("course_id") Long courseId) {
+        log.info("Getting reviews for course: {}", courseId);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .message("Get course reviews successfully")
+                        .code(200)
+                        .data(reviewService.getReviewsByCourseId(courseId))
+                        .build()
+        );
+    }
+
+    @PostMapping("/{course_id}/reviews")
+    public ResponseEntity<?> addReview(@PathVariable("course_id") Long courseId,@Valid @ModelAttribute ReviewReq req,@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User currentUser = userDetails.getUser();
+        log.info("Student {} creating review for course {}", currentUser.getUsername(), courseId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.builder()
+                        .message("Add review successfully")
+                        .code(201)
+                        .data(reviewService.addReview(req,courseId, currentUser))
                         .build()
         );
     }

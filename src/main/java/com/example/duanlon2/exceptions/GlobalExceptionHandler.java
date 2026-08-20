@@ -42,6 +42,20 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<?> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
+        log.error("Lỗi yêu cầu không hợp lệ (Bad Request): {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ErrorResponse.builder()
+                        .status(400)
+                        .error("Bad Request")
+                        .message(e.getMessage())
+                        .path(request.getRequestURI())
+                        .build()
+        );
+    }
+
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFoundException(NotFoundException e, HttpServletRequest request) {
         log.error("không tìm thấy tài nguyên: {}", e.getMessage());

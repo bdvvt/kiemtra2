@@ -2,14 +2,16 @@ package com.example.duanlon2.models.dto.res;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Getter
-@Builder
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class TeacherCoursesOverviewRes {
     private Long teacherId;
     private String teacherName;
@@ -17,7 +19,5 @@ public class TeacherCoursesOverviewRes {
     private int totalCourses;
     private int publishedCourses;
     private long totalEnrollments;
-    private BigDecimal averageProgressPercent;
     private List<TeacherCourseOverviewItem> courses;
 }
-

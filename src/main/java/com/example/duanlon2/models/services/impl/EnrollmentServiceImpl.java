@@ -72,7 +72,6 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         return enrollment;
     }
 
-
     @Override
     public Enrollment completeLesson(Long enrollmentId, Long lessonId, Long studentId) {
         log.info("Student ID: {} is completing lesson ID: {} for enrollment ID: {}", studentId, lessonId, enrollmentId);
@@ -121,7 +120,6 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
         log.info("Fetching learning progress report for student ID: {}", studentId);
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sinh viên với ID: " + studentId));
-
         List<Enrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
         List<CourseProgressRes> courses = new ArrayList<>();
         BigDecimal totalProgress = BigDecimal.ZERO;
@@ -135,8 +133,8 @@ public class EnrollmentServiceImpl implements IEnrollmentService {
             BigDecimal progressPercent = totalLessons == 0
                     ? BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY)
                     : BigDecimal.valueOf(completedLessons)
-                            .multiply(BigDecimal.valueOf(100))
-                            .divide(BigDecimal.valueOf(totalLessons), 2, RoundingMode.HALF_UP);
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(BigDecimal.valueOf(totalLessons), 2, RoundingMode.HALF_UP);
 
             if (progressPercent.compareTo(BigDecimal.valueOf(100)) == 0) {
                 completedCourses++;

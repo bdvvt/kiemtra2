@@ -12,8 +12,8 @@ import java.util.List;
 
 public interface IUserService {
     User createUser(UserReq req);
-    User updateUser(Long id, UserReq req);
-    User updateUserPassword(Long id, UserPassReq req);
+    User updateUser(User currentUser,Long id, UserReq req);
+    User updateUserPassword(User currentUser,Long id, UserPassReq req);
     User updateUserRole(Long id, UserUpRoleReq req);
     User findById(Long id);
     void deleteUser(Long id);

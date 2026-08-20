@@ -20,4 +20,3 @@ public class StudentProgressRes {
     private BigDecimal averageProgressPercent;
     private List<CourseProgressRes> courses;
 }
-

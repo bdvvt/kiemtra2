@@ -20,11 +20,11 @@ public class Notification {
     private Long notificationId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     @JsonIgnoreProperties({"password", "roles", "otpCode", "otpExpiration", "status"})
     private User user;
 
-    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
     @Column(name = "type", length = 50)
@@ -33,10 +33,10 @@ public class Notification {
     @Column(name = "target_url", length = 500)
     private String targetUrl;
 
-    @Column(name = "is_read", nullable = false)
+    @Column(name = "is_read")
     private Boolean isRead = false;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

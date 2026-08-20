@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +21,6 @@ public class ReportsController {
     private final IEnrollmentService enrollmentService;
 
     @GetMapping("/top_courses")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getTopCourses() {
         log.info("Fetching top courses report");
         return ResponseEntity.ok(
@@ -33,8 +33,7 @@ public class ReportsController {
     }
 
     @GetMapping("/teacher_courses_overview/{teacher_id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> getTeacherCoursesOverview(@org.springframework.web.bind.annotation.PathVariable("teacher_id") Long teacherId) {
+    public ResponseEntity<?> getTeacherCoursesOverview(@PathVariable("teacher_id") Long teacherId) {
         log.info("Fetching teacher courses overview for teacher ID: {}", teacherId);
         return ResponseEntity.ok(
                 ApiResponse.builder()
@@ -46,8 +45,7 @@ public class ReportsController {
     }
 
     @GetMapping("/student_progress/{student_id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> getStudentProgress(@org.springframework.web.bind.annotation.PathVariable("student_id") Long studentId) {
+    public ResponseEntity<?> getStudentProgress(@PathVariable("student_id") Long studentId) {
         log.info("Fetching student progress report for student ID: {}", studentId);
         return ResponseEntity.ok(
                 ApiResponse.builder()

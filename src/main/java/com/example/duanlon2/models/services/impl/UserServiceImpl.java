@@ -1,5 +1,6 @@
 package com.example.duanlon2.models.services.impl;
 
+import com.example.duanlon2.exceptions.BadRequestException;
 import com.example.duanlon2.exceptions.NotFoundException;
 import com.example.duanlon2.models.constants.RoleName;
 import com.example.duanlon2.models.dto.req.UserPassReq;
@@ -73,7 +74,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public User updateUser(Long id, UserReq req) {
+    public User updateUser(User currentUser,Long id, UserReq req) {
         User updateUser = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với ID: " + id));
         userRepository.findByEmail(req.getEmail()).ifPresent(existingUser -> {
             if (!existingUser.getId().equals(id)) {
@@ -88,6 +89,13 @@ public class UserServiceImpl implements IUserService {
         if(updateUser.getRoles().stream().anyMatch(role -> role.getRoleName() == RoleName.ADMIN)){
             throw new RuntimeException("Không thể cập nhật thông tin của người dùng có quyền ADMIN!");
         }
+        boolean isAdmin = currentUser.getRoles().stream()
+                .anyMatch(role -> role.getRoleName() == RoleName.ADMIN);
+        boolean isOwner = updateUser.getId().equals(currentUser.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new BadRequestException("Bạn không có quyền chỉnh sửa thông tin người dùng này");
+        }
         log.info("Updating user record with ID: {}", id);
         updateUser.setUsername(req.getUsername());
         updateUser.setEmail(req.getEmail());
@@ -98,9 +106,15 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public User updateUserPassword(Long id, UserPassReq req) {
+    public User updateUserPassword(User currentUser, Long id, UserPassReq req) {
         log.info("Updating password for user ID: {}", id);
         User updateUser = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với ID: " + id));
+        boolean isAdmin = currentUser.getRoles().stream()
+                .anyMatch(role -> role.getRoleName() == RoleName.ADMIN);
+        boolean isOwner = updateUser.getId().equals(currentUser.getId());
+        if (!isAdmin && !isOwner) {
+            throw new BadRequestException("Bạn không có quyền chỉnh sửa mat khau người dùng này");
+        }
         updateUser.setPassword(passwordEncoder.encode(req.getPassword()));
         return userRepository.save(updateUser);
     }
