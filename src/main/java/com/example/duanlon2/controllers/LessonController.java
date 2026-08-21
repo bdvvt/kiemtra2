@@ -17,6 +17,18 @@ import org.springframework.web.bind.annotation.*;
 public class LessonController {
     private final ILessonService lessonService;
 
+    @GetMapping("/{lesson_id}/content_preview")
+    public ResponseEntity<?> getContentPreview(@PathVariable("lesson_id") Long lessonId) {
+        log.info("Fetching content preview for lesson with ID: {}", lessonId);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .message("Lesson content preview retrieved successfully")
+                        .code(200)
+                        .data(lessonService.getContentPreview(lessonId))
+                        .build()
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         log.info("Fetching lesson with ID: {}", id);

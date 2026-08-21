@@ -4,6 +4,7 @@ import com.example.duanlon2.exceptions.NotFoundException;
 import com.example.duanlon2.models.constants.RoleName;
 import com.example.duanlon2.models.dto.req.LessonPublishReq;
 import com.example.duanlon2.models.dto.req.LessonReq;
+import com.example.duanlon2.models.dto.res.LessonContentPreviewRes;
 import com.example.duanlon2.models.entities.Lesson;
 import com.example.duanlon2.models.entities.User;
 import com.example.duanlon2.models.repositories.ILessonRepository;
@@ -17,11 +18,29 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class LessonServiceImpl implements ILessonService {
+    private static final int CONTENT_PREVIEW_LENGTH = 200;
+
     private final ILessonRepository lessonRepository;
     private final UploadService uploadService;
     @Override
     public Lesson findByIdPublishedLessons(Long id) {
         return lessonRepository.findByIdWithPublishedLessons(id).orElseThrow(() -> new NotFoundException("Không tìm thấy bài học với ID: " + id));
+    }
+
+    @Override
+    public LessonContentPreviewRes getContentPreview(Long id) {
+        Lesson lesson = findByIdPublishedLessons(id);
+        String textContent = lesson.getTextContent();
+        String preview = textContent == null ? "" : textContent.trim();
+        if (preview.length() > CONTENT_PREVIEW_LENGTH) {
+            preview = preview.substring(0, CONTENT_PREVIEW_LENGTH).trim() + "...";
+        }
+
+        return LessonContentPreviewRes.builder()
+                .lessonId(lesson.getLessonId())
+                .title(lesson.getTitle())
+                .contentPreview(preview)
+                .build();
     }
 
     @Override
